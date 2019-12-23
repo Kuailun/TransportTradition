@@ -404,7 +404,7 @@ def dataAccuracy(data):
     pass
 
 if __name__ =='__main__':
-    fileName="Database/User017/User017.txt"
+    fileName="Database/User001/User001.txt"
 
     mData=readData(fileName)
 
