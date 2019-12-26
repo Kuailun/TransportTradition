@@ -76,7 +76,7 @@ class Database_Registeration(Database):
 
         super(Database_Registeration, self).__init__(ss.REGISTERATION_DATABASE_PATH, ss.REGISTERATION_DATABASE_NAME)
         # 工作簿头部标签
-        self._database_title = ['用户ID', '姓名', '电话', '家庭地址', '工作地址', '家庭经度', '家庭纬度', '办公经度', '办公纬度', '开车距离', '开车时间',
+        self._database_title = ['用户ID', '姓名', '电话', '家庭地址', '工作地址', '家庭经度', '家庭纬度', '办公经度', '办公纬度', '初始化标签', '开车距离', '开车时间',
                                 '公共交通-公交距离', '公共交通-公交时间',
                                 '公共交通-地铁距离', '公共交通-地铁时间',
                                 '公共交通-步行距离', '公共交通-步行时间', '骑行距离', '骑行时间', '步行距离', '步行时间']
@@ -85,8 +85,16 @@ class Database_Registeration(Database):
         # 检查数据库的路径是否存在
         self._Database_Path_Existing()
         # 读取用户注册数据库
-        self._Database_ReadFile()
+        self.Database_ReadFile()
+
         pass
+
+    def __len__(self):
+        '''
+        定义取长度函数
+        :return:
+        '''
+        return len(self._database)
 
     def _Database_CreateFile(self):
         '''
@@ -116,7 +124,7 @@ class Database_Registeration(Database):
 
         pass
 
-    def _Database_ReadFile(self):
+    def Database_ReadFile(self):
         '''
         读入已有的用户注册数据库
         :return:
@@ -173,6 +181,38 @@ class Database_Registeration(Database):
         # 保存工作簿
         workbook.save(self._database_path)
         pass
+
+    def Database_Return_Record(self):
+        '''
+        返回一条数据库中的数据（未初始化的）
+        :return:
+        '''
+
+        status = True
+        msg = ''
+        data = []
+
+        # 数据库为空则返回错误
+        if len(self._database)==0:
+            status = False
+            msg = '数据库为空'
+            logger.warning(r'用户数据库为空，无法返回记录')
+            return status, msg, data
+
+        # 获得初始化标志所在位置
+        flagIndex = self._database_title.index('初始化标签')
+        for item in self._database:
+            if(self._database[item][flagIndex] == 0):
+                status = True
+                msg = ''
+                data = self._database[item]
+
+                # 返回值为True且data不为空时，继续调用
+                return status, msg, data
+            pass
+
+        # 返回值为True且data为空时，彻底结束
+        return status, msg, data
 
     def Database_Get_Title_Number(self):
         '''
@@ -267,6 +307,48 @@ class Database_Registeration(Database):
             logger.warning(r'数据库中无此ID: {0}，无法返回空气污染信息'.format(item))
             return status, msg, data
         pass
+
+    def Database_Set_UserInfo(self, p_data):
+        '''
+        将高德查询结果更新到数据库中
+        :param p_data:
+        :return:
+        '''
+        # 若数据库现在不可用，等待
+        while (not self._database_available):
+            pass
+
+        stauts = True
+        msg = ''
+
+        self._database_available = False
+
+        # 并非首次注册，已存在于数据库中
+        if (p_data[0] in self._database):
+            self._database[p_data[0]] = p_data
+            status = True
+
+        # 首次注册，成功添加
+        else:
+            status = False
+            msg = r'用户ID不在数据库中'
+            logger.warning(msg)
+            return False, msg
+
+        # 写到外部文件
+        self._Database_WriteFile()
+
+        # 允许其他使用
+        self._database_available = True
+
+        return stauts, msg
+
+    def Database_Receive_Command(self, p_data):
+        '''
+        从外部接收服务指令
+        :param p_data:
+        :return:
+        '''
 
     pass
 

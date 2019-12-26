@@ -6,13 +6,15 @@
 
 import os
 from Server.logger import logger
-from Server.settings import REGISTERATION_DATABASE_PATH, REGISTERATION_DATABASE_NAME, REGISTERATION_INTERFACE_KEYWORDS
+from Server.settings import REGISTERATION_INTERFACE_KEYWORDS, REGISTERATION_SERVICE_KEYWORDS
 import xlrd, xlwt
 from Server.functions import mRegister_Database
 
 
 class Registeration:
     def __init__(self):
+        self._status = True
+        self._msg = ''
         pass
 
     def Registeration_Interface(self, data):
@@ -25,7 +27,12 @@ class Registeration:
         status = True
         msg = ''
 
-        status, msg = self._Registeration_ExtractData(data)
+        if self._status == True:
+            status, msg = self._Registeration_ExtractData(data)
+
+        else:
+            status = False
+            msg = self._msg
 
         # 成功
         if status:
@@ -35,6 +42,66 @@ class Registeration:
             return 1, msg
 
         pass
+
+    def Registeration_Service_Interface(self, data):
+        '''
+        接受服务器传来的用户注册命令并处理
+        :param data:
+        :return:
+        '''
+
+        status = True
+        msg = ''
+
+        # 提取命令内容
+        status, msg, type = self._Registeration_Service_ExtractData(data)
+
+        # 停止接收新注册
+        if type == 'USER_STOP_REGISTER':
+            self._status = False
+            self._msg = r'服务器更新用户注册数据库，暂停接收新注册'
+            msg = self._msg
+            logger.warning(self._msg)
+            pass
+
+        # 开始接收新注册
+        if type == 'USER_START_REGISTER':
+            mRegister_Database.Database_ReadFile()
+            self._status = True
+            self._msg = r'服务器正常接收新注册'
+            msg = self._msg
+            logger.info(msg)
+            pass
+
+        return status, msg
+
+
+    def _Registeration_Service_ExtractData(self, js):
+        '''
+        从外部提交的数据还原数据结构
+        :param js:
+        :return:
+        '''
+        # 获取传送来的数据模板
+        keyWords = REGISTERATION_SERVICE_KEYWORDS
+
+        status = True
+        msg = ''
+
+        # 检查数据个数
+        if not len(js) == len(keyWords):
+            logger.warning(r"数据包不完整，缺少关键字")
+            return False, '数据包不完整，缺少关键字'
+
+        # 检查数据的一致性
+        for item in keyWords:
+            if not item in js:
+                status = False
+                logger.warning(r'数据包名称错误，缺少' + str(item))
+                return status, '数据包名称错误，缺少' + str(item)
+
+        return True, '', js[keyWords[0]]
+
 
     def _Registeration_ExtractData(self, js):
         '''

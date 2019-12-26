@@ -11,8 +11,18 @@ import os
 # -----------------------------------------------------------------------------
 SERVER_HOST = '0.0.0.0'
 SERVER_PORT = 2000
-SERVER_PATH = os.getcwd()
+SERVER_PATH = os.path.dirname(os.path.realpath(__file__))
 
+# -----------------------------------------------------------------------------
+# 高德路线查询的设置
+# -----------------------------------------------------------------------------
+AMAP_SERVER_KEY = '00bf37c00932a5a32b1e7810b719d87f'
+# 0：最快捷模式;1：最经济模式;2：最少换乘模式;3：最少步行模式;5：不乘地铁模式
+AMAP_SERVER_STRATEGY = 0
+AMAP_LOCATION_LON_MIN = 113.419367
+AMAP_LOCATION_LON_MAX = 113.757247
+AMAP_LOCATION_LAT_MIN = 34.673106
+AMAP_LOCATION_LAT_MAX = 34.768841
 # -----------------------------------------------------------------------------
 # 日志记录的设置
 # -----------------------------------------------------------------------------
@@ -33,6 +43,7 @@ REGISTERATION_DATABASE_NAME = 'UserInfo.xls'
 REGISTERATION_DATABASE_PATH = SERVER_PATH + "/Database/"
 REGISTERATION_INTERFACE_KEYWORDS = ['userId', 'name', 'tel', 'familyAdd', 'officeAdd', 'flongitude', 'flatitude',
                                     'olongitude', 'olatitude', 'type']
+REGISTERATION_SERVICE_KEYWORDS = ['command']
 
 # -----------------------------------------------------------------------------
 # 污染数据库的设置

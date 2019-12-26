@@ -44,3 +44,14 @@ def Gps():
         'data': data
     }
     return jsonify(response), 200
+
+# 让用户注册接口暂时停止运行，用于更新
+@app.route('/service/userreg',methods = ['POST'])
+def UserReg():
+    code, msg= registeration.Registeration_Service_Interface(request.form)
+
+    response = {
+        'code': code,
+        'msg': msg,
+    }
+    return jsonify(response), 200
