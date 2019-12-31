@@ -299,6 +299,14 @@ class Database_Registeration(Database):
         # 检查数据库中是否有该ID
         if item in self._database:
             data = self._database[item]
+
+            # 检查数据是否初始化过
+            if data[9] == 0.0:
+                status = False
+                msg = '该ID未进行高德查询或有问题：{0}'.format(data[0])
+                logger.warning(msg)
+                return status, msg, []
+
             return status, msg, data
         # 该ID不存在于数据库中
         else:
