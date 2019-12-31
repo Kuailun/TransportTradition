@@ -112,7 +112,7 @@ class PollutionExposure:
         :return:
         '''
         # 从网页获取需要分析的数据
-        response=requests.get(url=self.targetUrl)
+        response=requests.get(url=self.targetUrl, timeout = ss.POLLUTIONEXPOSURE_PM25_TIMEOUT)
 
         # 返回分析好的数据
         newItem = self._Pollution_Analyze(response)
