@@ -63,6 +63,28 @@ POLLUTIONEXPOSURE_INTERFACE_KEYWORDS = ['userId']
 PREDICTION_INTERFACE_KEYWORDS = ['userId', 'travel_data']
 PREDICTION_GPS_PREDICTION_KEYWORDS = ['id', 'accelerationX', 'accelerationY', 'accelerationZ', 'angleAccX', 'angleAccY',
                                       'angleAccZ', 'angleX', 'angleY', 'angleZ', 'direction', 'elevation', 'label',
-                                      'latitude', 'longitude', 'timestamp','datestamp', 'velocity','star']
-PREDICTION_GPS_REAL_KEYWORDS=['latitude','longitude','velocity','star','id','timestamp','datestamp','label']
-PREDICTION_INTERFACE_DICT = {'walk':1, 'bike':2, 'bus':3, 'subway':4, 'car':5 }
+                                      'latitude', 'longitude', 'timestamp', 'datestamp', 'velocity', 'star']
+PREDICTION_GPS_REAL_KEYWORDS = ['latitude', 'longitude', 'velocity', 'star', 'id', 'timestamp', 'datestamp', 'label']
+PREDICTION_INTERFACE_DICT = {'walk': 1, 'bike': 2, 'bus': 3, 'subway': 4, 'car': 5}
+
+# 速度上限 m/s
+PREDICTION_GPS_FILTER_SPEED_MAXIMUM = 50
+# GPS定位星数下限
+PREDICTION_GPS_FILTER_STAR_MINIMUM = 5
+# 旅程分段的时间上限，数据间隔超过该值则分为2段不相关的旅程
+PREDICTION_GPS_SEGMENT_INTERVAL_MAXIMUM = 120
+# 有效旅程的GPS数据下限，少于该值则删除本段旅程
+PREDICTION_GPS_SEGMENT_DATA_MINIMUM = 10
+# 识别为走路的最高速度
+PREDICTION_GPS_CALCULATE_WALK_VELOCITY_MAXIMUM = 1.8
+# 识别为走路的最高加速度
+PREDICTION_GPS_CALCULATE_WALK_ACCELERATION_MAXIMUM = 0.6
+#
+PREDICTION_GPS_CALCULATE_WALK_DISTANCE_MAXIMUM = 50
+# 一段旅程最少数据个数
+PREDICTION_GPS_CALCULATE_TRIP_SAMPLE_MINIMUM = 20
+# 在计算时，看前面几个及后面几个当中是否达到阈值
+PREDICTION_GPS_CALCULATE_MODE_RANGE = 10
+# 在计算中，看前面几个及后面几个当中是否达到阈值
+PREDICTION_GPS_CALCULATE_MODE_SCALE = 0.7
+
