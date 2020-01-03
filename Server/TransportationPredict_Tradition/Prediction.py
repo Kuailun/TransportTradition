@@ -97,6 +97,12 @@ class Prediction:
                 pass
             pass
 
+        # 检查数组是否为空
+        if len(gpsData) == 0:
+            msg = r'所含数据记录为空，错误'
+            logger.warning(msg)
+            return False, msg, None, None
+
         # 迁移数据到新的变量
         for i in range(len(gpsData)):
             subItem = {}
