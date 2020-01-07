@@ -16,31 +16,6 @@ if not os.path.exists("Backup"):
     os.mkdir("Backup")
 mID={}
 
-def readConfig():
-    global mID
-    if not os.path.exists("Backup/config.json"):
-        mID={}
-    else:
-        with open("Backup/config.json") as f:
-            mID=json.load(f)
-
-def getID(code):
-    if not code in mID:
-        mID[code]=str(len(mID)+1).zfill(3)
-        if not os.path.exists("Database/User"+str(mID[code])):
-            os.mkdir("Database/User"+str(mID[code]))
-            pass
-        if not os.path.exists("Database/User"+str(mID[code])+"/User"+str(mID[code])+".txt"):
-            file=open("Database/User"+str(mID[code])+"/User"+str(mID[code])+".txt",'w')
-            file.write("")
-            file.close()
-            pass
-        with open("Backup/config.json","w") as f:
-            json.dump(mID,f)
-            f.close()
-
-    return mID[code]
-
 def after_request(resp):
     resp.headers['Access-Control-Allow-Origin']='*'
     return resp
@@ -71,8 +46,8 @@ def days_date(time_str):
     return delta_time_days
 
 def putInDatabase(id,data):
-    fileName=getID(id)
-    with open("Database/User"+str(fileName)+"/User"+str(fileName)+".txt",'a') as f:
+    fileName=str(id)
+    with open("Database/" + fileName + ".txt",'a') as f:
         f.write(data+"\n")
         f.close()
         pass
@@ -89,6 +64,8 @@ def Store(data):
     m_mde=data['mode']
 
     m_processedData="{0},{1},{2},{3},{4},{5},{6},{7}".format(format(m_lat,".6f"),format(m_lon,".6f"),format(m_spd,".2f"),format(m_brg,".1f"),m_str,format(days_date(m_tsp),".10f"),m_tsp,m_mde)
+
+    print(r'接收，id为：{0}'.format(m_name))
 
     putInDatabase(m_name,m_processedData)
 
@@ -110,6 +87,7 @@ def CheckMJson(mJson):
             return False
         pass
 
+
     return True
 
 
@@ -129,8 +107,7 @@ def SubmitData():
     return jsonify(response),200
 
 if __name__=='__main__':
-    readConfig()
     scheduler=APScheduler()
     scheduler.init_app(app)
     scheduler.start()
-    app.run(host="0.0.0.0",port=80,debug=True)
+    app.run(host="0.0.0.0",port=80,debug=False)
