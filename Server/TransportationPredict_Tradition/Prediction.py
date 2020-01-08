@@ -173,8 +173,6 @@ class Prediction:
                 pass
             pass
 
-        groupTitle = {'walk': 1, 'bike': 2, 'bus': 3, 'car': 4, 'non-walk':5}
-
         # 将实际出行距离数据加入到回复中
         for item in p_distance:
             subItem = {
@@ -220,6 +218,8 @@ class Prediction:
         # 卫星数量低于此则认为数据不合格
         p_star = ss.PREDICTION_GPS_FILTER_STAR_MINIMUM
 
+        # 当前最新时间戳
+        currentTime = 0
         for i in range(len(p_data)):
             # 如果纬度不在范围内则删除
             if p_data[i]['latitude'] > 90 or p_data[i]['latitude'] < -90:
@@ -234,9 +234,10 @@ class Prediction:
             elif p_data[i]['star'] < p_star:
                 continue
             # 如果时间戳有问题内则删除
-            elif i < len(p_data) - 1 and p_data[i]['timestamp'] >= p_data[i + 1]['timestamp']:
+            elif currentTime >= p_data[i]['timestamp']:
                 continue
             r_data.append(p_data[i])
+            currentTime = p_data[i]['timestamp']
             pass
 
         return r_data
