@@ -166,7 +166,7 @@ class Prediction:
                     for k in range(len(p_data[i]['data'][j])):
                         subItem = {}
                         subItem['id'] = p_data[i]['data'][j][k]['id']
-                        subItem['travelWay'] = labels[j]
+                        subItem['travelWay'] = ss.PREDICTION_INTERFACE_DICT[labels[j]]
                         data['travelData'].append(subItem)
                         pass
                     pass
