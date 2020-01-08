@@ -65,7 +65,7 @@ PREDICTION_GPS_PREDICTION_KEYWORDS = ['id', 'accelerationX', 'accelerationY', 'a
                                       'angleAccZ', 'angleX', 'angleY', 'angleZ', 'direction', 'elevation', 'label',
                                       'latitude', 'longitude', 'timestamp', 'datestamp', 'velocity', 'star', 'locationType']
 PREDICTION_GPS_REAL_KEYWORDS = ['latitude', 'longitude', 'velocity', 'star', 'id', 'timestamp', 'datestamp', 'label']
-PREDICTION_INTERFACE_DICT = {'walk': 1, 'bike': 2, 'bus': 3, 'subway': 4, 'car': 5}
+PREDICTION_INTERFACE_DICT = {'static': 1,'walk': 2, 'bike': 3, 'bus': 4, 'subway': 5, 'car': 6, 'non-walk': 7}
 
 # 速度上限 m/s
 PREDICTION_GPS_FILTER_SPEED_MAXIMUM = 50

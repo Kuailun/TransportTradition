@@ -166,7 +166,7 @@ class Prediction:
                     for k in range(len(p_data[i]['data'][j])):
                         subItem = {}
                         subItem['id'] = p_data[i]['data'][j][k]['id']
-                        subItem['travelWay'] = labels[j]
+                        subItem['travelWay'] = ss.PREDICTION_INTERFACE_DICT[labels[j]]
                         data['travelData'].append(subItem)
                         pass
                     pass
@@ -178,7 +178,7 @@ class Prediction:
         # 将实际出行距离数据加入到回复中
         for item in p_distance:
             subItem = {
-                'travelWay': groupTitle[item],
+                'travelWay': ss.PREDICTION_INTERFACE_DICT[item],
                 'travelRealDistance': p_distance[item]
             }
             data['travelDistanceData'].append(subItem)
