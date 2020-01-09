@@ -55,3 +55,15 @@ def UserReg():
         'msg': msg,
     }
     return jsonify(response), 200
+
+# 用于接收最新污染数值
+@app.route('/submit/pollution',methods = ['POST'])
+def SubmitPollution():
+    code, msg= pollutionExposure.Pollution_Submit_Pollution(request.form)
+
+    response = {
+        'code': code,
+        'msg': msg,
+    }
+    return jsonify(response), 200
+

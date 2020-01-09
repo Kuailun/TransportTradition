@@ -7,28 +7,10 @@
 from Server.functions import mPollution_Database
 from Server.functions import mRegister_Database
 import requests
-from pyquery import PyQuery as pq
 from Server.logger import logger
-import Server.Utils as ut
 import Server.settings as ss
 import threading
-from apscheduler.schedulers.background import BackgroundScheduler
-import ctypes, inspect
-import time
-
-def _async_raise(tid, exctype):
-    '''Raises an exception in the threads with id tid'''
-    if not inspect.isclass(exctype):
-        raise TypeError("Only types can be raised (not instances)")
-    res = ctypes.pythonapi.PyThreadState_SetAsyncExc(ctypes.c_long(tid),
-                                                     ctypes.py_object(exctype))
-    if res == 0:
-        raise ValueError("invalid thread id")
-    elif res != 1:
-        # "if it returns a number greater than one, you're in trouble,
-        # and you should call it again with exc=NULL to revert the effect"
-        ctypes.pythonapi.PyThreadState_SetAsyncExc(ctypes.c_long(tid), None)
-        raise SystemError("PyThreadState_SetAsyncExc failed")
+import json
 
 class PollutionExposure:
     def __init__(self):
@@ -36,24 +18,7 @@ class PollutionExposure:
         初始化污染信息暴露类，准备网络爬虫
         '''
 
-        # 爬虫目标网址
-        self.targetUrl = 'http://www.pm25.in/zhengzhou'
-
-        # 上一个爬虫的运行状态
-        self.lastStatus = False
-
-        # 上一个爬虫的线程ID
-        self.lastTID = ''
-
-        # 初始化时更新一次污染结构
-        self._Pollution_Fetch()
-
-        # 设置定时任务，定时获取最新污染情况
-        scheduler = BackgroundScheduler()
-        scheduler.add_job(self._Pollution_Fetch, 'interval', seconds=ss.POLLUTIONEXPOSURE_PM25_INTERVAL,
-                          max_instances=2)
-        scheduler.start()
-        logger.info(r'污染暴露定时爬虫开启，间隔时间: {0} min'.format(str(ss.POLLUTIONEXPOSURE_PM25_INTERVAL // 60)))
+        logger.info(r'请启动污染数据爬虫程序，间隔时间: {0} min'.format(str(ss.POLLUTIONEXPOSURE_PM25_INTERVAL // 60)))
 
     def Pollution_Interface(self, p_data):
         '''
@@ -80,6 +45,42 @@ class PollutionExposure:
         else:
             return 1, msg, data
         pass
+
+    def Pollution_Submit_Pollution(self, p_data):
+        '''
+        用于接收外部发来的污染数值
+        :param p_data:
+        :return:
+        '''
+        status = True
+        msg = ''
+
+        status, msg, newItem = self._Pollution_ExtractPollution(p_data)
+
+        # 写入数据库
+        mPollution_Database.Database_Set_Record(newItem)
+
+        return True,''
+
+    def _Pollution_ExtractPollution(self, p_data):
+        '''
+        对从外部发来的数据进行解析
+        :return:
+        '''
+        # 获取传送来的数据模板
+        keyWords = ss.POLLUTIONEXPOSURE_INTERFACE_KEYWORDS
+
+        msg = ''
+
+        # 检查数据个数
+        if not len(p_data) == 1:
+            logger.warning(r"数据包不完整，缺少关键字")
+            return False, '数据包不完整，缺少关键字', None
+
+        data = p_data['pollution']
+
+        data = json.loads(data)
+        return True, msg, data
 
     def _Pollution_CalculateData(self, p_data):
         '''
@@ -137,8 +138,6 @@ class PollutionExposure:
         :return:
         '''
 
-        # 检查上一个是否还在运行，还在运行则关闭上一个
-        self._Pollution_Check_Last_One()
 
         self.lastStatus = True
         self.lastTID = threading.get_ident()
@@ -156,61 +155,5 @@ class PollutionExposure:
         self.lastStatus = False
         self.lastTID = ''
         pass
-
-    def _Pollution_Check_Last_One(self):
-        '''
-        检查上一个运行的数据爬虫是否已经结束，没结束则关闭
-        :return:
-        '''
-
-        # 如果爬虫已结束则返回
-        if not self.lastStatus:
-            return
-        else:
-            _async_raise(self.lastTID, SystemExit)
-            self.lastTID = ''
-            self.lastStatus = False
-            logger.warning(r'终止尚未结束的上个线程，重新开始下次爬虫')
-            return
-
-
-
-    def _Pollution_Analyze(self, p_content):
-        '''
-        解析获得的网络内容
-        :param p_content:
-        :return:
-        '''
-
-        # 如果网站爬取出现问题，返回默认值
-        if not p_content.status_code == 200:
-            logger.warning(r"污染数据爬取错误，回复代码 {0}".format(str(p_content.status_code)))
-            return ss.POLLUTIONEXPOSURE_DEFAULT_DATA
-
-        # 将获得的网站转为pyquery对象
-        doc = pq(p_content.text)
-        items = doc('.span1')
-
-        # 如果返回的数据量不为标准的9个
-        if not len(items) == 9:
-            logger.warning(r"污染数据爬取错误，所含项目数少于9")
-            return ss.POLLUTIONEXPOSURE_DEFAULT_DATA
-
-        # 第9项非数据，需要排除
-        index = 0
-        newItem = ut.Get_Current_Timestamp_Rounded()
-        for item in items:
-            if (index < 8):
-                # 将子项再归为pq对象
-                item = pq(item)
-                value = item.text()
-                value = value.split('\n')
-                newItem.append(float(value[0]))
-                pass
-            index += 1
-            pass
-
-        return newItem
-
 
 pollutionExposure = PollutionExposure()
