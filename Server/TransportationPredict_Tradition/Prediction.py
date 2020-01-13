@@ -160,7 +160,7 @@ class Prediction:
         transportation_dict = ss.PREDICTION_INTERFACE_DICT
 
         # 需要返回的数据
-        data = {'travelData':[],'travelDistanceData':[],'awardMoney':self._Prediction_Calculate_Award(p_data)}
+        data = {'travelData':[],'travelDistanceData':[],'awardMoney':self._Prediction_Calculate_Award(p_data, p_distance, p_time)}
         for i in range(len(p_data)):
             # 部分旅程由于过短被判别为None
             if not p_data[i] == None:
@@ -690,6 +690,8 @@ class Prediction:
             for j in range(len(p_data[i]['label'])):
                 for k in range(len(p_data[i]['data'][j])):
                     currentItem = p_data[i]['data'][j][k]
+                    if currentItem['label'] == '':
+                        continue
                     confusionMatrix[currentItem['label']][p_data[i]['label'][j]] += 1
                     pass
                 pass
@@ -707,7 +709,7 @@ class Prediction:
             num += 1
         pass
 
-    def _Prediction_Calculate_Award(self, p_data):
+    def _Prediction_Calculate_Award(self, p_data, p_distance, p_time):
         '''
         用于计算应该给予的钱数
         :param p_data:
@@ -719,6 +721,16 @@ class Prediction:
             # 返回结果，扣除每日份的所有钱数
             return ss.PREDICTION_AWARD_PENALTY
 
+        # 如果当日没有开车里程，不扣钱
+        if p_distance['car'] == 0:
+            #返回结果，不扣钱
+            return 0
+
+        # 如果当日有开车，且开车里程为绝大多数，则扣钱
+        if p_distance['car'] >= p_distance['bus']:
+            return ss.PREDICTION_AWARD_PENALTY
+
+        return 0
 
 
 
