@@ -38,6 +38,9 @@ class Prediction:
         # 如果预测成功则重新整理数据并返回
         if status:
             status, msg, data = self._Prediction_AssembleData(processedData, distance, time)
+        elif status == False and msg == '所含数据记录为空，错误':
+            status, msg, data = self._Prediction_AssembleData([], [], [])
+
 
         # 成功
         if status:
@@ -157,7 +160,7 @@ class Prediction:
         transportation_dict = ss.PREDICTION_INTERFACE_DICT
 
         # 需要返回的数据
-        data = {'travelData':[],'travelDistanceData':[],'awardMoney':0}
+        data = {'travelData':[],'travelDistanceData':[],'awardMoney':self._Prediction_Calculate_Award(p_data)}
         for i in range(len(p_data)):
             # 部分旅程由于过短被判别为None
             if not p_data[i] == None:
@@ -703,6 +706,20 @@ class Prediction:
             print("{0} {1}, Accuracy: {2}".format(tag[num], confusionMatrix[i], acc))
             num += 1
         pass
+
+    def _Prediction_Calculate_Award(self, p_data):
+        '''
+        用于计算应该给予的钱数
+        :param p_data:
+        :return:
+        '''
+
+        # 如果所含数据为空
+        if len(p_data) == 0:
+            # 返回结果，扣除每日份的所有钱数
+            return ss.PREDICTION_AWARD_PENALTY
+
+
 
 
 prediction = Prediction()
