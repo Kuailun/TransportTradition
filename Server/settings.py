@@ -66,6 +66,8 @@ PREDICTION_GPS_PREDICTION_KEYWORDS = ['id', 'accelerationX', 'accelerationY', 'a
                                       'latitude', 'longitude', 'timestamp', 'datestamp', 'velocity', 'star', 'locationType']
 PREDICTION_GPS_REAL_KEYWORDS = ['latitude', 'longitude', 'velocity', 'star', 'id', 'timestamp', 'datestamp', 'label']
 PREDICTION_INTERFACE_DICT = {'static': 1,'walk': 2, 'bike': 3, 'bus': 4, 'subway': 5, 'car': 6, 'non-walk': 7}
+PREDICTION_BUSSTOP_NAME = 'BusStop.xls'
+PREDICTION_BUSSTOP_PATH = SERVER_PATH + "/Database/"
 
 # 速度上限 m/s
 PREDICTION_GPS_FILTER_SPEED_MAXIMUM = 50
@@ -88,3 +90,10 @@ PREDICTION_GPS_CALCULATE_MODE_RANGE = 10
 # 在计算中，看前面几个及后面几个当中是否达到阈值
 PREDICTION_GPS_CALCULATE_MODE_SCALE = 0.7
 
+PREDICTION_BUSSTOP_LOCATION_LON_MIN = 113.419367
+PREDICTION_BUSSTOP_LOCATION_LON_MAX = 113.819853
+PREDICTION_BUSSTOP_LOCATION_LAT_MIN = 34.697547
+PREDICTION_BUSSTOP_LOCATION_LAT_MAX = 34.868556
+PREDICTION_BUSSTOP_X_GROUPS = 20
+PREDICTION_BUSSTOP_Y_GROUPS = 20
+PREDICTION_BUSSTOP_RANGE = 40

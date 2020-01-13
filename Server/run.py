@@ -6,10 +6,11 @@
 import os
 import sys
 print(os.path.dirname(os.path.realpath(__file__)))
-sys.path.append(r"E:\WorkSpace\Python\TransportTradition")
+sys.path.append(r"C:\Users\Administrator\Desktop\TransportTradition")
 
 from Server import app
 import Server.views
+import Server.TransportationPredict_Tradition.BusStop
 from Server.logger import logger
 from Server.settings import SERVER_HOST, SERVER_PORT
 

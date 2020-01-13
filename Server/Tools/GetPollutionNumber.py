@@ -7,7 +7,7 @@
 import os
 import sys
 print(os.path.dirname(os.path.realpath(__file__)))
-sys.path.append(r"C:\Users\Administrator\Desktop\TransportationGPS")
+sys.path.append(r"C:\Users\Administrator\Desktop\TransportTradition")
 import requests
 from pyquery import PyQuery as pq
 from Server import settings as ss

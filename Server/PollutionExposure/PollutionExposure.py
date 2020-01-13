@@ -60,6 +60,8 @@ class PollutionExposure:
         # 写入数据库
         mPollution_Database.Database_Set_Record(newItem)
 
+        logger.info(r'最新污染数值为：{0}'.format(newItem[2]))
+
         return True,''
 
     def _Pollution_ExtractPollution(self, p_data):

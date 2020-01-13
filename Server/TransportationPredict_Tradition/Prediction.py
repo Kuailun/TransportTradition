@@ -6,6 +6,7 @@
 
 from Server import settings as ss
 from Server.logger import logger
+from Server.TransportationPredict_Tradition.BusStop import mBusStop
 import json
 import numpy as np
 from geopy.distance import vincenty
@@ -31,7 +32,7 @@ class Prediction:
 
         # 如果成功获得gps数据则计算，否则直接返回
         if status:
-            status, msg, processedData, distance, time = self._Prediction_ProcessData(gpsData)
+            status, msg, processedData, distance, time = self.Prediction_ProcessData(gpsData)
             pass
 
         # 如果预测成功则重新整理数据并返回
@@ -114,7 +115,7 @@ class Prediction:
 
         return True, msg, userId, data
 
-    def _Prediction_ProcessData(self, p_data):
+    def Prediction_ProcessData(self, p_data):
         '''
         数据处理并预测
         :param p_data:
@@ -137,6 +138,7 @@ class Prediction:
             pass
 
         distance, time = self._STEP06_Data_Describe(data_subsegs_processed)
+        self._STEP07_Data_Accuracy(data_subsegs_processed)
 
         return status, msg, data_subsegs_processed, distance, time
         pass
@@ -477,9 +479,6 @@ class Prediction:
             return
         dataFeature = []
 
-        # 引入公交站数据
-        busStops = [(42.362050, -71.091445), (42.362670, -71.088181)]
-
         # 计算数据特征
         for i in range(len(p_data['label'])):
             max_speed = 0
@@ -518,25 +517,11 @@ class Prediction:
                     pass
             pass
 
-        # 判断公交站
-        busCnt = np.zeros((len(busStops)), dtype='int8')
-        for i in range(len(p_data['label'])):
-            if (p_data['label'][i] == 'walk'):
-                for j in range(len(p_data['data'][i])):
-                    for k in range(len(busStops)):
-                        di = vincenty((p_data['data'][i][j]['latitude'], p_data['data'][i][j]['longitude']), busStops[k]).meters
-                        #
-                        if (di < 10):
-                            busCnt[k] += 1
-                    pass
-                pass
-            pass
-
         # 判断开车
         for i in range(len(p_data['label'])):
             if (p_data['label'][i] == "non-walk"):
                 # 开车
-                if (dataFeature[i]['max_speed'] > 10 and dataFeature[i]['averageSpeed'] > 4):
+                if (dataFeature[i]['max_speed'] > 8 and dataFeature[i]['averageSpeed'] > 4):
                     p_data['label'][i] = 'car'
                     pass
             pass
@@ -546,13 +531,117 @@ class Prediction:
         while (changeFlag):
             changeFlag = False
             for i in range(len(p_data['label']) - 2):
+                # 前后均为开车的情况
                 if (p_data['label'][i] == p_data['label'][i + 2] and (not p_data['label'][i] == 'walk') and (
-                not p_data['label'][i] == 'walk') and p_data['label'][i + 1] == 'walk'):
+                        not p_data['label'][i] == 'walk') and p_data['label'][i + 1] == 'walk'):
+                    # 如果中途的走路时间超过一定阈值，则为真走路
+                    if(dataFeature[i+1]['deltaTime']>120 and dataFeature[i+1]['averageSpeed']>0.5):
+                        continue
                     p_data['label'][i + 1] = p_data['label'][i]
+                    changeFlag = True
+                    pass
+
+                if(p_data['label'][i] == 'non-walk' and p_data['label'][i+1]=='walk' and p_data['label'][i+2]=='car'):
+                    # 如果中途的走路时间超过一定阈值，则为真走路
+                    if (dataFeature[i + 1]['deltaTime'] > 120 and dataFeature[i+1]['averageSpeed']>0.5):
+                        continue
+                    p_data['label'][i + 1] = 'car'
+                    p_data['label'][i] = 'car'
+                    changeFlag = True
+                    pass
+
+                if (p_data['label'][i+2] == 'non-walk' and p_data['label'][i + 1] == 'walk' and p_data['label'][
+                    i] == 'car'):
+                    # 如果中途的走路时间超过一定阈值，则为真走路
+                    if (dataFeature[i + 1]['deltaTime'] > 120 and dataFeature[i+1]['averageSpeed']>0.5):
+                        continue
+                    p_data['label'][i + 1] = 'car'
+                    p_data['label'][i + 2] = 'car'
+                    changeFlag = True
+                    pass
+
+                if (p_data['label'][i] == 'car' and p_data['label'][i+1] == 'car' and p_data['label'][i+2] == 'non-walk'):
+                    p_data['label'][i + 2] = 'car'
+                    changeFlag = True
+                    pass
+
+                if (p_data['label'][i] == 'non-walk' and p_data['label'][i+1] == 'car' and p_data['label'][i+2] == 'car'):
+                    p_data['label'][i] = 'car'
                     changeFlag = True
                     pass
                 pass
             pass
+
+        totalResult = []
+        result = {}
+        # 判断公交站
+        for i in range(len(p_data['label'])):
+            if (p_data['label'][i] == 'walk'):
+                for j in range(len(p_data['data'][i])):
+                    busStops = mBusStop.busStop_Search(p_data['data'][i][j])
+                    for k in range(len(busStops)):
+                        di = vincenty((p_data['data'][i][j]['latitude'], p_data['data'][i][j]['longitude']),
+                                      (busStops[k][1], busStops[k][0])).meters
+                        #
+                        if (di < ss.PREDICTION_BUSSTOP_RANGE):
+                            # 如果该ID从未出现过，则添加
+                            if not busStops[k][4] in result:
+                                result[busStops[k][4]] = 1
+                            else:
+                                result[busStops[k][4]] += 1
+                    pass
+
+                totalResult.append(result)
+                result = {}
+
+                pass
+            elif (not p_data['label'][i] == 'walk'):
+                for j in range(len(p_data['data'][i])):
+                    if (p_data['data'][i][j]['velocity'] <= 0.2):
+                        busStops = mBusStop.busStop_Search(p_data['data'][i][j])
+                        for k in range(len(busStops)):
+                            di = vincenty((p_data['data'][i][j]['latitude'], p_data['data'][i][j]['longitude']),
+                                          (busStops[k][1], busStops[k][0])).meters
+                            #
+                            if (di < ss.PREDICTION_BUSSTOP_RANGE):
+                                # 如果该ID从未出现过，则添加
+                                if not busStops[k][4] in result:
+                                    result[busStops[k][4]] = 1
+                                else:
+                                    result[busStops[k][4]] += 1
+                        pass
+                    pass
+                pass
+            pass
+        if not p_data['label'][-1] == 'walk':
+            totalResult.append(result)
+
+        busFlag = []
+        for i in range(len(totalResult)):
+            value = 0
+            for j in totalResult[i]:
+                if value < totalResult[i][j]:
+                    value = totalResult[i][j]
+            if(len(totalResult[i]) >= 4 or value >= 30):
+                busFlag.append(1)
+            else:
+                busFlag.append(0)
+                pass
+            pass
+
+        index = 0
+        # 判断是否需要将car改为bus
+        for i in range(len(p_data['label'])):
+            if(p_data['label'][i] == 'walk'):
+                index = index + 1
+                pass
+            elif(p_data['label'][i] == 'car'):
+                if busFlag[index] == 1:
+                    p_data['label'][i] = 'bus'
+                pass
+
+
+
         return p_data
 
     def _STEP06_Data_Describe(self, p_data):
@@ -577,5 +666,43 @@ class Prediction:
         logger.debug(r'出行时间统计： ' + str(time))
         return distance, time
         pass
+
+    def _STEP07_Data_Accuracy(self, p_data):
+        '''
+        统计预测的结果与真实标签的相似度
+        :param p_data:
+        :return:
+        '''
+
+        # 实际为走路，预测为走路、骑车、地铁、公交、汽车、其他
+        confusionMatrix = {'walk': {'walk': 0, 'bike': 0, 'subway': 0, 'bus': 0, 'car': 0, 'non-walk': 0},
+                           'bike': {'walk': 0, 'bike': 0, 'subway': 0, 'bus': 0, 'car': 0, 'non-walk': 0},
+                           'subway': {'walk': 0, 'bike': 0, 'subway': 0, 'bus': 0, 'car': 0, 'non-walk': 0},
+                           'bus': {'walk': 0, 'bike': 0, 'subway': 0, 'bus': 0, 'car': 0, 'non-walk': 0},
+                           'car': {'walk': 0, 'bike': 0, 'subway': 0, 'bus': 0, 'car': 0, 'non-walk': 0}}
+
+        for i in range(len(p_data)):
+            if (p_data[i] == None):
+                continue
+            for j in range(len(p_data[i]['label'])):
+                for k in range(len(p_data[i]['data'][j])):
+                    currentItem = p_data[i]['data'][j][k]
+                    confusionMatrix[currentItem['label']][p_data[i]['label'][j]] += 1
+                    pass
+                pass
+            pass
+        tag = ['walk', 'bike', 'subway', 'bus', 'car', 'non-walk']
+        num = 0
+        for i in confusionMatrix:
+            divide = confusionMatrix[i][tag[0]] + confusionMatrix[i][tag[1]] + confusionMatrix[i][tag[2]] + \
+                     confusionMatrix[i][tag[3]] + confusionMatrix[i][tag[4]] + confusionMatrix[i][tag[5]]
+            if divide == 0:
+                acc = 0
+            else:
+                acc = confusionMatrix[i][i] / divide
+            print("{0} {1}, Accuracy: {2}".format(tag[num], confusionMatrix[i], acc))
+            num += 1
+        pass
+
 
 prediction = Prediction()
