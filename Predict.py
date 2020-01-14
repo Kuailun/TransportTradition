@@ -40,7 +40,7 @@ def readData(p_path):
     return ret_table
 
 if __name__ =='__main__':
-    fileName="Database/LWH.txt"
+    fileName="Database/YSY.txt"
 
     mData=readData(fileName)
 

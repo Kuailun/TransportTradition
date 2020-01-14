@@ -39,7 +39,9 @@ class Prediction:
         if status:
             status, msg, data = self._Prediction_AssembleData(processedData, distance, time)
         elif status == False and msg == '所含数据记录为空，错误':
-            status, msg, data = self._Prediction_AssembleData([], [], [])
+            status, _, data = self._Prediction_AssembleData([], [], [])
+        elif status == False and msg == '无有效数据':
+            status, _, data = self._Prediction_AssembleData([], [], [])
 
 
         # 成功
@@ -129,6 +131,9 @@ class Prediction:
         msg = ''
 
         mData_Filtered = self._STEP01_Valid_Data_Filter(p_data)
+
+        if len(mData_Filtered) == 0:
+            return False, '无有效数据', [], [], []
 
         data_segment_time = self._STEP02_Trip_Segment(mData_Filtered)
 
@@ -625,7 +630,7 @@ class Prediction:
             for j in totalResult[i]:
                 if value < totalResult[i][j]:
                     value = totalResult[i][j]
-            if(len(totalResult[i]) >= 4 or value >= 30):
+            if(len(totalResult[i]) >= 4 or value >= 35):
                 busFlag.append(1)
             else:
                 busFlag.append(0)
