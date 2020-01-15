@@ -100,14 +100,30 @@ class PollutionExposure:
 
         # 如果成功提取则计算，否则返回
         if status:
-            data[0]['value'] = user_data[9] + user_data[10]
-            data[1]['value'] = user_data[11] + user_data[12] + user_data[13] + user_data[14] + user_data[15] + \
-                               user_data[16]
-            data[2]['value'] = user_data[17] + user_data[18]
-            data[3]['value'] = user_data[19] + user_data[20]
+
+            AQI = mPollution_Database.Database_Get_Record()
+
+            data[0]['value'] = self._Pollution_Calculate_PM(AQI, ss.POLLUTIONEXPOSURE_CONCENTRATION['car'], ss.POLLUTIONEXPOSURE_INHALATION['car'], user_data[10])
+            data[1]['value'] = self._Pollution_Calculate_PM(AQI, ss.POLLUTIONEXPOSURE_CONCENTRATION['bus'], ss.POLLUTIONEXPOSURE_INHALATION['bus'], user_data[12]) + \
+                               self._Pollution_Calculate_PM(AQI, ss.POLLUTIONEXPOSURE_CONCENTRATION['subway'], ss.POLLUTIONEXPOSURE_INHALATION['subway'], user_data[14]) + \
+                               self._Pollution_Calculate_PM(AQI, ss.POLLUTIONEXPOSURE_CONCENTRATION['walk'], ss.POLLUTIONEXPOSURE_INHALATION['walk'], user_data[16])
+            data[2]['value'] = self._Pollution_Calculate_PM(AQI, ss.POLLUTIONEXPOSURE_CONCENTRATION['bike'], ss.POLLUTIONEXPOSURE_INHALATION['bike'], user_data[18])
+            data[3]['value'] = self._Pollution_Calculate_PM(AQI, ss.POLLUTIONEXPOSURE_CONCENTRATION['walk'], ss.POLLUTIONEXPOSURE_INHALATION['walk'], user_data[20])
             pass
 
         return status, msg, data
+
+    def _Pollution_Calculate_PM(self,AmbientPM, Concentration, Inhalation, Time ):
+        '''
+        根据公式计算PM2.5暴露量
+        :param AmbientPM:
+        :param Concentration:
+        :param Inhalation:
+        :param Time:
+        :return:
+        '''
+        return (AmbientPM/22)*Concentration*Inhalation*(Time/24/60/60)
+
 
     def _Pollution_ExtractData(self, js):
         '''

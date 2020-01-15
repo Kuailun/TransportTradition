@@ -49,6 +49,16 @@ class busStop():
             ret_data.append(item)
             pass
 
+        # for i in range(sheet.nrows):
+        #     item = []
+        #     item.append(float(sheet.cell(i, 5).value))
+        #     item.append(float(sheet.cell(i, 6).value))
+        #     item.append(sheet.cell(i, 2).value)
+        #     item.append(sheet.cell(i, 3).value)
+        #     item.append(sheet.cell(i, 4).value)
+        #     ret_data.append(item)
+        #     pass
+
         return ret_data[1:-1]
 
     def _busStop_Remove_Duplication(self):

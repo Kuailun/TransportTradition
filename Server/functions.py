@@ -514,6 +514,13 @@ class Database_PollutionExposure(Database):
 
         return stauts, msg
 
+    def Database_Get_Record(self):
+        '''
+        获取最新地PM2.5 数据
+        :return:
+        '''
+        return self._database_latest_data[2]
+
 
 mRegister_Database = Database_Registeration()
 mPollution_Database = Database_PollutionExposure()

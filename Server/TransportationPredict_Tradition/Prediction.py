@@ -630,7 +630,7 @@ class Prediction:
             for j in totalResult[i]:
                 if value < totalResult[i][j]:
                     value = totalResult[i][j]
-            if(len(totalResult[i]) >= 4 or value >= 35):
+            if(len(totalResult[i]) >= 2 or value >= 20):
                 busFlag.append(1)
             else:
                 busFlag.append(0)

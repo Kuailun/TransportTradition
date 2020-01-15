@@ -260,7 +260,7 @@ class AMAP_User:
         except:
             msg = '分析出行数据失败，ID {0}'.format(p_data[0])
             logger.warning(msg)
-            return False, msg, []
+            return False, msg, p_data
 
     def _Process_Received_Data(self, p_data, type):
         '''
