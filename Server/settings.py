@@ -35,7 +35,7 @@ LOGGING_FILE_LOG = True
 
 # 输出日志的等级
 LOGGING_LEVEL = ['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL']
-LOGGING_CURRENT_LEVEL = LOGGING_LEVEL[0]
+LOGGING_CURRENT_LEVEL = LOGGING_LEVEL[1]
 
 # -----------------------------------------------------------------------------
 # 用户数据库的设置

@@ -519,7 +519,7 @@ class Database_PollutionExposure(Database):
         获取最新地PM2.5 数据
         :return:
         '''
-        return self._database_latest_data[2]
+        return self._database_latest_data[3]
 
 
 mRegister_Database = Database_Registeration()

@@ -32,6 +32,7 @@ class Prediction:
 
         # 如果成功获得gps数据则计算，否则直接返回
         if status:
+            logger.debug(gpsData)
             status, msg, processedData, distance, time = self.Prediction_ProcessData(gpsData)
             pass
 
