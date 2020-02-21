@@ -65,12 +65,14 @@ POLLUTIONEXPOSURE_INHALATION = {'car':1,'bus':4.5,'subway':3.06,'bike':6.25,'wal
 # GPS预测的设置
 # -----------------------------------------------------------------------------
 PREDICTION_INTERFACE_KEYWORDS = ['userId', 'travel_data']
-PREDICTION_GPS_PREDICTION_KEYWORDS = ['id', 'accelerationX', 'accelerationY', 'accelerationZ', 'angleAccX', 'angleAccY',
-                                      'angleAccZ', 'angleX', 'angleY', 'angleZ', 'direction', 'elevation', 'label',
-                                      'latitude', 'longitude', 'timestamp', 'datestamp', 'velocity', 'star', 'locationType']
+# PREDICTION_GPS_PREDICTION_KEYWORDS = ['id', 'accelerationX', 'accelerationY', 'accelerationZ', 'angleAccX', 'angleAccY',
+#                                       'angleAccZ', 'angleX', 'angleY', 'angleZ', 'direction', 'elevation', 'label',
+#                                       'latitude', 'longitude', 'timestamp', 'datestamp', 'velocity', 'star', 'locationType']
+PREDICTION_GPS_PREDICTION_KEYWORDS = ['id', 'label',
+                                      'latitude', 'longitude', 'timestamp', 'datestamp', 'velocity', 'star']
 PREDICTION_GPS_REAL_KEYWORDS = ['latitude', 'longitude', 'velocity', 'star', 'id', 'timestamp', 'datestamp', 'label']
 PREDICTION_INTERFACE_DICT = {'static': 1,'walk': 2, 'bike': 3, 'bus': 4, 'subway': 5, 'car': 6, 'non-walk': 7}
-PREDICTION_BUSSTOP_NAME = 'BusStop.xls'
+PREDICTION_BUSSTOP_NAME = 'BusStop2.xls'
 PREDICTION_BUSSTOP_PATH = SERVER_PATH + "/Database/"
 
 # 速度上限 m/s
@@ -103,4 +105,4 @@ PREDICTION_BUSSTOP_X_GROUPS = 20
 PREDICTION_BUSSTOP_Y_GROUPS = 20
 PREDICTION_BUSSTOP_RANGE = 20
 
-PREDICTION_AWARD_PENALTY = -30
+PREDICTION_AWARD_PENALTY = 0

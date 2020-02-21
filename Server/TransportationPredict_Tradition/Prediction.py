@@ -10,6 +10,7 @@ from Server.TransportationPredict_Tradition.BusStop import mBusStop
 import json
 import numpy as np
 from geopy.distance import vincenty
+from datetime import datetime
 
 
 class Prediction:
@@ -27,12 +28,13 @@ class Prediction:
         msg = ''
         data = []
 
+        logger.debug(p_data)
+
         # 解析发来的数据
         status, msg, userId, gpsData = self._Prediction_ExtractData(p_data)
 
         # 如果成功获得gps数据则计算，否则直接返回
         if status:
-            logger.debug(gpsData)
             status, msg, processedData, distance, time = self.Prediction_ProcessData(gpsData)
             pass
 
@@ -42,6 +44,8 @@ class Prediction:
         elif status == False and msg == '所含数据记录为空，错误':
             status, _, data = self._Prediction_AssembleData([], [], [])
         elif status == False and msg == '无有效数据':
+            status, _, data = self._Prediction_AssembleData([], [], [])
+        elif status == False:
             status, _, data = self._Prediction_AssembleData([], [], [])
 
 
@@ -83,17 +87,18 @@ class Prediction:
         gpsData = p_data['travel_data']
 
         try:
+            # gpsData = gpsData.replace("\\",'')
             gpsData = json.loads(gpsData)
         except:
             logger.warning(r'数据转为list错误，ID: {0}'.format(userId))
             return False, '数据转为list错误，ID: {0}'.format(userId), None, None
 
         # 检查GPS数据中的格式
-        for i in range(len(gpsData)):
-            if not len(gpsData[i]) == len(gps_keyWords):
-                logger.warning(r'gps数据不完整，ID: {0}，第 {1} 条记录'.format(userId, i))
-                return False, 'gps数据不完整，ID: {0}，第 {1} 条记录'.format(userId, i), None, None
-            pass
+        # for i in range(len(gpsData)):
+        #     if not len(gpsData[i]) == len(gps_keyWords):
+        #         logger.warning(r'gps数据不完整，ID: {0}，第 {1} 条记录'.format(userId, i))
+        #         return False, 'gps数据不完整，ID: {0}，第 {1} 条记录'.format(userId, i), None, None
+        #     pass
 
         # 检查数据名称
         for i in range(len(gpsData)):
@@ -104,9 +109,11 @@ class Prediction:
                 pass
             pass
 
+        logger.info(r"当前GPS处理ID为：{0}".format(userId))
+
         # 检查数组是否为空
         if len(gpsData) == 0:
-            msg = r'所含数据记录为空，错误'
+            msg = r'所含数据记录为空，错误: ID {0}'.format(userId)
             logger.warning(msg)
             return False, msg, None, None
 
@@ -631,7 +638,7 @@ class Prediction:
             for j in totalResult[i]:
                 if value < totalResult[i][j]:
                     value = totalResult[i][j]
-            if(len(totalResult[i]) >= 2 or value >= 20):
+            if(len(totalResult[i]) >= 2 or value >= 40):
                 busFlag.append(1)
             else:
                 busFlag.append(0)
@@ -671,8 +678,8 @@ class Prediction:
                 pass
             pass
 
-        logger.debug(r'出行距离统计： ' + str(distance))
-        logger.debug(r'出行时间统计： ' + str(time))
+        logger.info(r'出行距离统计： ' + str(distance))
+        logger.info(r'出行时间统计： ' + str(time))
         return distance, time
         pass
 
@@ -711,7 +718,7 @@ class Prediction:
                 acc = 0
             else:
                 acc = confusionMatrix[i][i] / divide
-            print("{0} {1}, Accuracy: {2}".format(tag[num], confusionMatrix[i], acc))
+            # print("{0} {1}, Accuracy: {2}".format(tag[num], confusionMatrix[i], acc))
             num += 1
         pass
 
@@ -730,6 +737,11 @@ class Prediction:
         # 如果当日没有开车里程，不扣钱
         if p_distance['car'] == 0:
             #返回结果，不扣钱
+            return 0
+
+        # 如果今天是周末，不扣钱
+        dayOfWeek = datetime.now().isoweekday()
+        if dayOfWeek == 6 or dayOfWeek == 7:
             return 0
 
         # 如果当日有开车，且开车里程为绝大多数，则扣钱

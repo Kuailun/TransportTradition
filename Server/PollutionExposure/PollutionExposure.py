@@ -111,6 +111,8 @@ class PollutionExposure:
             data[3]['value'] = self._Pollution_Calculate_PM(AQI, ss.POLLUTIONEXPOSURE_CONCENTRATION['walk'], ss.POLLUTIONEXPOSURE_INHALATION['walk'], user_data[21])
             pass
 
+        logger.debug(r'car:{0}, bus:{1}, bike:{2}, walk:{3}'.format(data[0]['value'],data[1]['value'],data[2]['value'],data[3]['value']))
+
         return status, msg, data
 
     def _Pollution_Calculate_PM(self,AmbientPM, Concentration, Inhalation, Time ):

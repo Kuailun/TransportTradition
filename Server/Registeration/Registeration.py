@@ -53,6 +53,8 @@ class Registeration:
         status = True
         msg = ''
 
+        logger.debug(data)
+
         # 提取命令内容
         status, msg, type = self._Registeration_Service_ExtractData(data)
 

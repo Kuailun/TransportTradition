@@ -30,7 +30,7 @@ def _Pollution_Post(p_data):
         'pollution': json.dumps(p_data),
     }
 
-    _ = requests.post('http://127.0.0.1:2000/submit/pollution', data = data)
+    _ = requests.post('http://39.105.151.175:2000/submit/pollution', data = data)
 
     pass
 
@@ -82,7 +82,7 @@ while(True):
 
         # 返回分析好的数据
         newItem = _Pollution_Analyze(response)
-        logger.debug(r"爬取污染数据，最新污染值为: {0}   PM2.5: {1} ".format(newItem[0], newItem[2]))
+        logger.info(r"爬取污染数据，最新污染值为: {0}   PM2.5: {1} ".format(newItem[0], newItem[2]))
 
         # 发送数据到服务器
         _Pollution_Post(newItem)
