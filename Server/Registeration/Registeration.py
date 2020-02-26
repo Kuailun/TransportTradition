@@ -26,6 +26,7 @@ class Registeration:
 
         status = True
         msg = ''
+        logger.debug(data)
 
         if self._status == True:
             status, msg = self._Registeration_ExtractData(data)
@@ -133,8 +134,9 @@ class Registeration:
         newItem = [0 for i in range(mRegister_Database.Database_Get_Title_Number())]
 
         # 除type外，其余均放到新的一项中
-        for i in range(len(keyWords) - 1):
-            newItem[i] = js[keyWords[i]]
+        for i in range(len(keyWords)):
+            if not keyWords[i] == "type":
+                newItem[i] = js[keyWords[i]]
             pass
 
         if js['type'] == '1':

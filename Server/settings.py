@@ -10,8 +10,16 @@ import os
 # 服务器运行的设置
 # -----------------------------------------------------------------------------
 SERVER_HOST = '0.0.0.0'
-SERVER_PORT = 2000
 SERVER_PATH = os.path.dirname(os.path.realpath(__file__))
+# 服务器运行模式： NORMAL, TEST
+SERVER_MODE = "NORMAL"
+SERVER_PORT = 0
+if SERVER_MODE == "NORMAL":
+    SERVER_PORT = 2000
+elif SERVER_MODE == "TEST":
+    SERVER_PORT = 2001
+else:
+    raise("SERVER模式错误！")
 
 # -----------------------------------------------------------------------------
 # 高德路线查询的设置
@@ -43,7 +51,7 @@ LOGGING_CURRENT_LEVEL = LOGGING_LEVEL[1]
 REGISTERATION_DATABASE_NAME = 'UserInfo.xls'
 REGISTERATION_DATABASE_PATH = SERVER_PATH + "/Database/"
 REGISTERATION_INTERFACE_KEYWORDS = ['userId', 'name', 'tel', 'familyAdd', 'officeAdd', 'flongitude', 'flatitude',
-                                    'olongitude', 'olatitude', 'type']
+                                    'olongitude', 'olatitude', 'type','we_chat','car_plate']
 REGISTERATION_SERVICE_KEYWORDS = ['command']
 
 # -----------------------------------------------------------------------------

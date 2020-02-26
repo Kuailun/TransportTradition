@@ -5,8 +5,13 @@
 # @Description : 服务器启动运行
 import os
 import sys
+import settings
 print(os.path.dirname(os.path.realpath(__file__)))
-sys.path.append(r"C:\Users\Administrator\Desktop\TransportTradition")
+print("当前服务器运行模式为：{0}".format(settings.SERVER_MODE))
+if settings.SERVER_MODE == "NORMAL":
+    sys.path.append(r"C:\Users\Administrator\Desktop\TransportTradition")
+elif settings.SERVER_MODE == "TEST":
+    sys.path.append(r"C:\Users\Administrator\Desktop\TransportTradition-Test")
 
 from Server import app
 import Server.views

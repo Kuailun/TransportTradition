@@ -76,7 +76,7 @@ class Database_Registeration(Database):
 
         super(Database_Registeration, self).__init__(ss.REGISTERATION_DATABASE_PATH, ss.REGISTERATION_DATABASE_NAME)
         # 工作簿头部标签
-        self._database_title = ['用户ID', '姓名', '电话', '家庭地址', '工作地址', '家庭经度', '家庭纬度', '办公经度', '办公纬度', '初始化标签', '开车距离', '开车时间',
+        self._database_title = ['用户ID', '姓名', '电话', '家庭地址', '工作地址', '家庭经度', '家庭纬度', '办公经度', '办公纬度', '初始化标签', '微信ID','车牌号','开车距离', '开车时间',
                                 '公共交通-公交距离', '公共交通-公交时间',
                                 '公共交通-地铁距离', '公共交通-地铁时间',
                                 '公共交通-步行距离', '公共交通-步行时间', '骑行距离', '骑行时间', '步行距离', '步行时间']
