@@ -103,12 +103,12 @@ class PollutionExposure:
 
             AQI = mPollution_Database.Database_Get_Record()
 
-            data[0]['value'] = self._Pollution_Calculate_PM(AQI, ss.POLLUTIONEXPOSURE_CONCENTRATION['car'], ss.POLLUTIONEXPOSURE_INHALATION['car'], user_data[13])
-            data[1]['value'] = self._Pollution_Calculate_PM(AQI, ss.POLLUTIONEXPOSURE_CONCENTRATION['bus'], ss.POLLUTIONEXPOSURE_INHALATION['bus'], user_data[15]) + \
-                               self._Pollution_Calculate_PM(AQI, ss.POLLUTIONEXPOSURE_CONCENTRATION['subway'], ss.POLLUTIONEXPOSURE_INHALATION['subway'], user_data[17]) + \
-                               self._Pollution_Calculate_PM(AQI, ss.POLLUTIONEXPOSURE_CONCENTRATION['walk'], ss.POLLUTIONEXPOSURE_INHALATION['walk'], user_data[19])
-            data[2]['value'] = self._Pollution_Calculate_PM(AQI, ss.POLLUTIONEXPOSURE_CONCENTRATION['bike'], ss.POLLUTIONEXPOSURE_INHALATION['bike'], user_data[21])
-            data[3]['value'] = self._Pollution_Calculate_PM(AQI, ss.POLLUTIONEXPOSURE_CONCENTRATION['walk'], ss.POLLUTIONEXPOSURE_INHALATION['walk'], user_data[23])
+            data[0]['value'] = self._Pollution_Calculate_PM(AQI, ss.POLLUTIONEXPOSURE_CONCENTRATION['car'], ss.POLLUTIONEXPOSURE_INHALATION['car'], user_data[15])
+            data[1]['value'] = self._Pollution_Calculate_PM(AQI, ss.POLLUTIONEXPOSURE_CONCENTRATION['bus'], ss.POLLUTIONEXPOSURE_INHALATION['bus'], user_data[17]) + \
+                               self._Pollution_Calculate_PM(AQI, ss.POLLUTIONEXPOSURE_CONCENTRATION['subway'], ss.POLLUTIONEXPOSURE_INHALATION['subway'], user_data[19]) + \
+                               self._Pollution_Calculate_PM(AQI, ss.POLLUTIONEXPOSURE_CONCENTRATION['walk'], ss.POLLUTIONEXPOSURE_INHALATION['walk'], user_data[21])
+            data[2]['value'] = self._Pollution_Calculate_PM(AQI, ss.POLLUTIONEXPOSURE_CONCENTRATION['bike'], ss.POLLUTIONEXPOSURE_INHALATION['bike'], user_data[23])
+            data[3]['value'] = self._Pollution_Calculate_PM(AQI, ss.POLLUTIONEXPOSURE_CONCENTRATION['walk'], ss.POLLUTIONEXPOSURE_INHALATION['walk'], user_data[25])
             pass
 
         logger.debug(r'car:{0}, bus:{1}, bike:{2}, walk:{3}'.format(data[0]['value'],data[1]['value'],data[2]['value'],data[3]['value']))

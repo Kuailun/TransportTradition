@@ -51,7 +51,7 @@ LOGGING_CURRENT_LEVEL = LOGGING_LEVEL[1]
 REGISTERATION_DATABASE_NAME = 'UserInfo.xls'
 REGISTERATION_DATABASE_PATH = SERVER_PATH + "/Database/"
 REGISTERATION_INTERFACE_KEYWORDS = ['userId', 'name', 'tel', 'familyAdd', 'officeAdd', 'flongitude', 'flatitude',
-                                    'olongitude', 'olatitude', 'type','we_chat','car_plate']
+                                    'olongitude', 'olatitude', 'type','we_chat','car_plate','gender','age']
 REGISTERATION_SERVICE_KEYWORDS = ['command']
 
 # -----------------------------------------------------------------------------

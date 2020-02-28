@@ -199,16 +199,16 @@ class AMAP_User:
 
         try:
             # 分析走路
-            p_data[22] = int(content_walk['route']['paths'][0]['distance'])
-            p_data[23] = int(content_walk['route']['paths'][0]['duration'])
+            p_data[24] = int(content_walk['route']['paths'][0]['distance'])
+            p_data[25] = int(content_walk['route']['paths'][0]['duration'])
 
             # 分析骑车
-            p_data[20] = int(content_bike['data']['paths'][0]['distance'])
-            p_data[21] = int(content_bike['data']['paths'][0]['duration'])
+            p_data[22] = int(content_bike['data']['paths'][0]['distance'])
+            p_data[23] = int(content_bike['data']['paths'][0]['duration'])
 
             # 分析开车
-            p_data[12] = int(content_car['route']['paths'][0]['distance'])
-            p_data[13] = int(content_car['route']['paths'][0]['duration'])
+            p_data[14] = int(content_car['route']['paths'][0]['distance'])
+            p_data[15] = int(content_car['route']['paths'][0]['duration'])
 
             # 分析公共交通
             trip = content_bus['route']['transits'][0]
@@ -246,12 +246,12 @@ class AMAP_User:
                 pass
 
             # 复制到数据体里
-            p_data[14] = bus_distance
-            p_data[15] = bus_duration
-            p_data[16] = subway_distance
-            p_data[17] = subway_duration
-            p_data[18] = walk_distance
-            p_data[19] = walk_duration
+            p_data[16] = bus_distance
+            p_data[17] = bus_duration
+            p_data[18] = subway_distance
+            p_data[19] = subway_duration
+            p_data[20] = walk_distance
+            p_data[21] = walk_duration
 
             # 设置处理过的标志
             p_data[9] = 1
