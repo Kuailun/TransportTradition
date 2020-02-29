@@ -6,8 +6,8 @@
 from geopy.distance import vincenty
 
 name='一马路陇海路（公交站）'
-GPS_AMAP=(34.000000,113.000000)
-GPS_API=(34.008551,113.000000)
+GPS_AMAP=(34.744804,113.756796)
+GPS_API=(34.13276,114.711143)
 # GPS_Jianghao=(34.740044,113.66481)
 
 Distance_12=vincenty(GPS_AMAP,GPS_API).meters

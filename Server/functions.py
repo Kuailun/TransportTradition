@@ -591,7 +591,7 @@ class Database_UserLogin(Database):
         '''
 
         with open(self._database_path,'w') as f:
-            
+
         pass
 
     def Database_Return_Record(self):
