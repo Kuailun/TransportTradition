@@ -6,6 +6,7 @@
 
 import os
 import xlrd, xlwt
+import json
 from xlutils.copy import copy
 from Server.logger import logger
 from Server import settings as ss
@@ -359,8 +360,6 @@ class Database_Registeration(Database):
         '''
 
     pass
-
-
 class Database_PollutionExposure(Database):
     '''
     基于Database类，污染物的数据库
@@ -520,6 +519,156 @@ class Database_PollutionExposure(Database):
         :return:
         '''
         return self._database_latest_data[3]
+    pass
+class Database_UserLogin(Database):
+    '''
+    基于Database类，用户登录的数据库
+    '''
+
+    def __init__(self):
+        '''
+        初始化用户注册数据类
+        '''
+
+        super(Database_UserLogin, self).__init__(ss.USERLOGIN_DATABASE_PATH, ss.USERLOGIN_DATABASE_NAME)
+        # 数据库
+        self._database = {}
+        # 检查数据库的路径是否存在
+        self._Database_Path_Existing()
+        # 读取用户注册数据库
+        self.Database_ReadFile()
+
+        pass
+
+    def __len__(self):
+        '''
+        定义取长度函数
+        :return:
+        '''
+        return len(self._database)
+
+    def _Database_CreateFile(self):
+        '''
+        创建用户登录的数据库
+        :return:
+        '''
+
+        self._database_available = False
+
+        with open(self._database_path,encoding='utf-8') as f:
+            f.close()
+
+        self._database_available = True
+
+        pass
+
+    def Database_ReadFile(self):
+        '''
+        读入已有的用户登录数据库
+        :return:
+        '''
+
+        # 若数据库现在不可用，等待
+        while (not self._database_available):
+            pass
+
+        # 禁止其他应用操作
+        self._database_available = False
+        with open(self._database_path, encoding='utf-8') as f:
+            self._database = json.load(f)
+            f.close()
+            pass
+
+        logger.info(r"用户登录数据库读取完成，共计 " + str(len(self._database)) + ' 项')
+        # 允许其他应用操作
+        self._database_available = True
+        pass
+
+    def _Database_WriteFile(self):
+        '''
+        将数据库中现有数据覆盖写入文件
+        :return:
+        '''
+
+        with open(self._database_path,'w') as f:
+            
+        pass
+
+    def Database_Return_Record(self):
+        '''
+        返回一条数据库中的数据（未初始化的）
+        :return:
+        '''
+
+        status = True
+        msg = ''
+        data = []
+
+        # 数据库为空则返回错误
+        if len(self._database) == 0:
+            status = False
+            msg = '数据库为空'
+            logger.warning(r'用户数据库为空，无法返回记录')
+            return status, msg, data
+
+        # 获得初始化标志所在位置
+        flagIndex = self._database_title.index('初始化标签')
+        for item in self._database:
+            if (self._database[item][flagIndex] == 0):
+                status = True
+                msg = ''
+                data = self._database[item]
+
+                # 返回值为True且data不为空时，继续调用
+                return status, msg, data
+            pass
+
+        # 返回值为True且data为空时，彻底结束
+        return status, msg, data
+
+    def Database_Get_Title_Number(self):
+        '''
+        获取Title的数量
+        :return:
+        '''
+        return len(self._database_title)
+
+    def Database_Set_Record(self, p_data):
+        '''
+        外部函数调用，写入数据
+        :param data:
+        :return:
+        '''
+
+        # 若数据库现在不可用，等待
+        while (not self._database_available):
+            pass
+
+        stauts = True
+        msg = ''
+
+        self._database_available = False
+
+        # 并非首次注册，已存在于数据库中
+        if (p_data[0] in self._database):
+            self._database[p_data[0]] = p_data
+            status = True
+            msg = r"用户ID已存在于数据库中，非首次注册： " + str(p_data[0])
+            logger.warning(msg)
+
+        # 首次注册，成功添加
+        else:
+            self._database[p_data[0]] = p_data
+            status = True
+            msg = ''
+
+        # 写到外部文件
+        self._Database_WriteFile()
+
+        # 允许其他使用
+        self._database_available = True
+
+        return stauts, msg
 
 
 mRegister_Database = Database_Registeration()

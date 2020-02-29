@@ -54,6 +54,9 @@ REGISTERATION_INTERFACE_KEYWORDS = ['userId', 'name', 'tel', 'familyAdd', 'offic
                                     'olongitude', 'olatitude', 'type','we_chat','car_plate','gender','age']
 REGISTERATION_SERVICE_KEYWORDS = ['command']
 
+USERLOGIN_DATABASE_NAME = "UserLogin.josn"
+USERLOGIN_DATABASE_PATH = SERVER_PATH + "/Database/"
+
 # -----------------------------------------------------------------------------
 # 污染数据库的设置
 # -----------------------------------------------------------------------------
