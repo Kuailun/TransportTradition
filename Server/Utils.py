@@ -5,6 +5,7 @@
 # @Description:
 
 from datetime import datetime
+import time
 from Server import settings as ss
 def Get_Current_Timestamp_Rounded():
     '''
@@ -26,3 +27,26 @@ def Get_Current_Timestamp_Rounded():
     delta_time=no_days.days+currentTime.hour/24.0
 
     return [current, delta_time]
+
+def Get_Today_Date():
+    """
+    获取当日的日期
+    """
+    today = time.strftime("%Y-%m-%d", time.localtime())
+    return today
+
+def Get_Day_Of_Week():
+    """
+    获取当天是星期几
+    """
+    dayOfWeek = datetime.now().isoweekday() - 1
+    return dayOfWeek
+
+def TimeStr_TimeStamp(p_str):
+    """
+    时间字符串转时间戳
+    @return:
+    """
+    timeArray = time.strptime(p_str, "%Y-%m-%d %H:%M:%S")
+    timeStamp = int(time.mktime(timeArray))
+    return timeStamp

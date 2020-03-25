@@ -5,10 +5,24 @@
 # @Description : 接口的定义
 
 from Server import app
-from flask import request,jsonify
+from flask import request,jsonify,redirect
 from Server.Registeration.Registeration import registeration
 from Server.PollutionExposure.PollutionExposure import pollutionExposure
 from Server.TransportationPredict_Tradition.Prediction import prediction
+from Server.logger import logger
+
+@app.before_request
+def before_request():
+    """
+    获取请求内容
+    @return:
+    """
+    if request.path == "/registeration" or request.path =="/polutionexposure" or request.path == "/gps":
+        if request.method == "POST":
+            return
+    elif request.path == "/":
+        return
+    return redirect("/")
 
 # 注册/修改用户的注册信息
 @app.route('/registeration', methods=['POST'])
@@ -67,3 +81,6 @@ def SubmitPollution():
     }
     return jsonify(response), 200
 
+@app.route("/",methods = ['GET',"POST"])
+def default():
+    return "Error",404

@@ -10,6 +10,7 @@ import json
 from xlutils.copy import copy
 from Server.logger import logger
 from Server import settings as ss
+from Server import Utils as ut
 
 
 class Database:
@@ -555,7 +556,8 @@ class Database_UserLogin(Database):
 
         self._database_available = False
 
-        with open(self._database_path,encoding='utf-8') as f:
+        with open(self._database_path,'w', encoding='utf-8') as f:
+            f.write(json.dumps({}))
             f.close()
 
         self._database_available = True
@@ -591,51 +593,14 @@ class Database_UserLogin(Database):
         '''
 
         with open(self._database_path,'w') as f:
-
+            json_data = json.dumps(self._database, indent = 4)
+            f.write(json_data)
+            pass
         pass
 
-    def Database_Return_Record(self):
+    def Database_Set_Record(self, p_id,p_login, p_statistic):
         '''
-        返回一条数据库中的数据（未初始化的）
-        :return:
-        '''
-
-        status = True
-        msg = ''
-        data = []
-
-        # 数据库为空则返回错误
-        if len(self._database) == 0:
-            status = False
-            msg = '数据库为空'
-            logger.warning(r'用户数据库为空，无法返回记录')
-            return status, msg, data
-
-        # 获得初始化标志所在位置
-        flagIndex = self._database_title.index('初始化标签')
-        for item in self._database:
-            if (self._database[item][flagIndex] == 0):
-                status = True
-                msg = ''
-                data = self._database[item]
-
-                # 返回值为True且data不为空时，继续调用
-                return status, msg, data
-            pass
-
-        # 返回值为True且data为空时，彻底结束
-        return status, msg, data
-
-    def Database_Get_Title_Number(self):
-        '''
-        获取Title的数量
-        :return:
-        '''
-        return len(self._database_title)
-
-    def Database_Set_Record(self, p_data):
-        '''
-        外部函数调用，写入数据
+        外部函数调用，表示用户今日登录了
         :param data:
         :return:
         '''
@@ -649,18 +614,23 @@ class Database_UserLogin(Database):
 
         self._database_available = False
 
-        # 并非首次注册，已存在于数据库中
-        if (p_data[0] in self._database):
-            self._database[p_data[0]] = p_data
-            status = True
-            msg = r"用户ID已存在于数据库中，非首次注册： " + str(p_data[0])
-            logger.warning(msg)
+        # 如果数据库中没有该ID
+        if not p_id in self._database:
+            self._database[p_id] = {"history":[],"login_statistic":{}}
+            pass
 
-        # 首次注册，成功添加
-        else:
-            self._database[p_data[0]] = p_data
-            status = True
-            msg = ''
+        todayDate = ut.Get_Today_Date()
+        todayWeek = ut.Get_Day_Of_Week()
+
+        # 确保不会报错
+        if not "login_statistic" in self._database[p_id]:
+            self._database[p_id]['login_statistic'] = {}
+
+        # 更新History
+        if not todayDate in self._database[p_id]['history'] and p_login == True:
+            self._database[p_id]['history'].append(todayDate)
+            self._database[p_id]['login_statistic'][todayDate] = p_statistic
+            pass
 
         # 写到外部文件
         self._Database_WriteFile()
@@ -673,3 +643,4 @@ class Database_UserLogin(Database):
 
 mRegister_Database = Database_Registeration()
 mPollution_Database = Database_PollutionExposure()
+mUserLogin_Database = Database_UserLogin()

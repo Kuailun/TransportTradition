@@ -7,6 +7,8 @@
 from Server import settings as ss
 from Server.logger import logger
 from Server.TransportationPredict_Tradition.BusStop import mBusStop
+from Server.functions import mUserLogin_Database
+from Server import Utils as ut
 import json
 import numpy as np
 from geopy.distance import vincenty
@@ -31,7 +33,9 @@ class Prediction:
         logger.debug(p_data)
 
         # 解析发来的数据
-        status, msg, userId, gpsData = self._Prediction_ExtractData(p_data)
+        status, msg, userId, gpsData, bonus_flag, login_statistic = self._Prediction_ExtractData(p_data)
+
+        mUserLogin_Database.Database_Set_Record(userId,bonus_flag, login_statistic)
 
         # 如果成功获得gps数据则计算，否则直接返回
         if status:
@@ -40,13 +44,13 @@ class Prediction:
 
         # 如果预测成功则重新整理数据并返回
         if status:
-            status, msg, data = self._Prediction_AssembleData(processedData, distance, time)
+            status, msg, data = self._Prediction_AssembleData(processedData, distance, time, bonus_flag)
         elif status == False and msg == '所含数据记录为空，错误':
-            status, _, data = self._Prediction_AssembleData([], [], [])
+            status, _, data = self._Prediction_AssembleData([], [], [], bonus_flag)
         elif status == False and msg == '无有效数据':
-            status, _, data = self._Prediction_AssembleData([], [], [])
+            status, _, data = self._Prediction_AssembleData([], [], [], bonus_flag)
         elif status == False:
-            status, _, data = self._Prediction_AssembleData([], [], [])
+            status, _, data = self._Prediction_AssembleData([], [], [], bonus_flag)
 
 
         # 成功
@@ -71,17 +75,19 @@ class Prediction:
 
         data = []
         msg = ''
+        bonus_flag = False
+        login_statistic = {"Weak":0, "Strong":0,"Others":0}
 
         # 检查数据个数
         if not len(p_data) == len(interface_keyWords):
             logger.warning(r"数据包不完整，缺少关键字")
-            return False, '数据包不完整，缺少关键字', None, None
+            return False, '数据包不完整，缺少关键字', None, None, bonus_flag, None
 
         # 检查数据的一致性
         for item in interface_keyWords:
             if not item in p_data:
                 logger.warning(r'数据包名称错误，缺少' + str(item))
-                return False, '数据包名称错误，缺少' + str(item), None, None
+                return False, '数据包名称错误，缺少' + str(item), None, None, bonus_flag, None
 
         userId = p_data['userId']
         gpsData = p_data['travel_data']
@@ -91,7 +97,7 @@ class Prediction:
             gpsData = json.loads(gpsData)
         except:
             logger.warning(r'数据转为list错误，ID: {0}'.format(userId))
-            return False, '数据转为list错误，ID: {0}'.format(userId), None, None
+            return False, '数据转为list错误，ID: {0}'.format(userId), None, None, bonus_flag, None
 
         # 检查GPS数据中的格式
         # for i in range(len(gpsData)):
@@ -100,12 +106,17 @@ class Prediction:
         #         return False, 'gps数据不完整，ID: {0}，第 {1} 条记录'.format(userId, i), None, None
         #     pass
 
+        # 根据GPS所含的内容和ID，给用户登录数据库发送消息
+        if len(gpsData) > 0:
+            bonus_flag = True
+            login_statistic = self._LoginTime_Calculate(gpsData)
+
         # 检查数据名称
         for i in range(len(gpsData)):
             for item in gps_keyWords:
                 if not item in gpsData[i]:
                     logger.warning(r'数据包名称错误，ID: {0}, 第 {1} 条记录， {2}'.format(userId, i, item))
-                    return False, '数据包名称错误，ID: {0}, 第 {1} 条记录， {2}'.format(userId, i, item), None, None
+                    return False, '数据包名称错误，ID: {0}, 第 {1} 条记录， {2}'.format(userId, i, item), None, None, bonus_flag, login_statistic
                 pass
             pass
 
@@ -115,7 +126,7 @@ class Prediction:
         if len(gpsData) == 0:
             msg = r'所含数据记录为空，错误: ID {0}'.format(userId)
             logger.warning(msg)
-            return False, msg, None, None
+            return False, msg, userId, None, bonus_flag, login_statistic
 
         # 迁移数据到新的变量
         for i in range(len(gpsData)):
@@ -126,7 +137,7 @@ class Prediction:
             data.append(subItem)
             pass
 
-        return True, msg, userId, data
+        return True, msg, userId, data, bonus_flag, login_statistic
 
     def Prediction_ProcessData(self, p_data):
         '''
@@ -159,7 +170,7 @@ class Prediction:
         return status, msg, data_subsegs_processed, distance, time
         pass
 
-    def _Prediction_AssembleData(self, p_data, p_distance, p_time):
+    def _Prediction_AssembleData(self, p_data, p_distance, p_time, p_bonus):
         '''
         将数据还原为接口形式
         :param p_data:
@@ -173,7 +184,7 @@ class Prediction:
         transportation_dict = ss.PREDICTION_INTERFACE_DICT
 
         # 需要返回的数据
-        data = {'travelData':[],'travelDistanceData':[],'awardMoney':self._Prediction_Calculate_Award(p_data, p_distance, p_time)}
+        data = {'travelData':[],'travelDistanceData':[],'awardMoney':self._Prediction_Calculate_Award(p_data, p_distance, p_time, p_bonus)}
         for i in range(len(p_data)):
             # 部分旅程由于过短被判别为None
             if not p_data[i] == None:
@@ -722,33 +733,85 @@ class Prediction:
             num += 1
         pass
 
-    def _Prediction_Calculate_Award(self, p_data, p_distance, p_time):
+    def _Prediction_Calculate_Award(self, p_data, p_distance, p_time, p_bonus):
         '''
         用于计算应该给予的钱数
         :param p_data:
         :return:
         '''
 
-        # 如果所含数据为空
-        if len(p_data) == 0:
-            # 返回结果，扣除每日份的所有钱数
-            return ss.PREDICTION_AWARD_PENALTY
+        # # 如果所含数据为空
+        # if len(p_data) == 0:
+        #     # 返回结果，扣除每日份的所有钱数
+        #     return ss.PREDICTION_AWARD_PENALTY
+        #
+        # # 如果当日没有开车里程，不扣钱
+        # if p_distance['car'] == 0:
+        #     #返回结果，不扣钱
+        #     return 0
+        #
+        # # 如果今天是周末，不扣钱
+        # dayOfWeek = datetime.now().isoweekday()
+        # if dayOfWeek == 6 or dayOfWeek == 7:
+        #     return 0
+        #
+        # # 如果当日有开车，且开车里程为绝大多数，则扣钱
+        # if p_distance['car'] >= p_distance['bus']:
+        #     return ss.PREDICTION_AWARD_PENALTY
 
-        # 如果当日没有开车里程，不扣钱
-        if p_distance['car'] == 0:
-            #返回结果，不扣钱
-            return 0
-
-        # 如果今天是周末，不扣钱
-        dayOfWeek = datetime.now().isoweekday()
-        if dayOfWeek == 6 or dayOfWeek == 7:
-            return 0
-
-        # 如果当日有开车，且开车里程为绝大多数，则扣钱
-        if p_distance['car'] >= p_distance['bus']:
-            return ss.PREDICTION_AWARD_PENALTY
+        if p_bonus:
+            return ss.PREDICTION_AWARD_BONUS
 
         return 0
+
+    def _LoginTime_Calculate(self, p_data):
+        """
+        根据数据，计算用户当日登录时间段
+        @param p_data:
+        @return:
+        """
+        ret_data = {
+            "Morning":{"Weak":0, "Strong":0, "Others":0},
+            "Middle":{"Weak":0, "Strong":0, "Others":0},
+            "Evening":{"Weak":0, "Strong":0, "Others":0},
+            "Night":{"Weak":0, "Strong":0, "Others":0},
+            "Others":{"Weak":0, "Strong":0, "Others":0}
+            }
+
+        date = ut.Get_Today_Date()
+        time_9 = ut.TimeStr_TimeStamp(date + " 09:00:00") * 1000
+        time_17= ut.TimeStr_TimeStamp(date + " 17:00:00") * 1000
+        time_19 = ut.TimeStr_TimeStamp(date + " 19:00:00") * 1000
+
+        # 每个点代表的时间长短
+        period = "Others"
+        # 每个点代表的信号强弱
+        signal = "Others"
+        for i in range(len(p_data)):
+            if p_data[i]['timestamp']<= time_9:
+                period = "Morning"
+            elif p_data[i]['timestamp'] > time_9 and p_data[i]['timestamp'] <= time_17:
+                period = "Middle"
+            elif p_data[i]['timestamp'] > time_17 and p_data[i]['timestamp'] <= time_19:
+                period = "Evening"
+            elif p_data[i]['timestamp'] > time_19:
+                period = "Night"
+            else:
+                rate = "Others"
+                pass
+
+            if p_data[i]['locationType'] == 1:
+                signal = "Strong"
+            elif p_data[i]['locationType'] == 5:
+                signal = "Weak"
+            else:
+                signal = "Others"
+                pass
+
+            ret_data[period][signal] = ret_data[period][signal] + 1
+            pass
+
+        return ret_data
 
 
 
