@@ -1,0 +1,28 @@
+POST /cellphone
+
+	传入数据：{"cellphone":"13810293640"}
+		cellphone：用户输入的手机号码
+		
+	返回数据：{"code":0,"msg":"","data":{}}
+		code: 0-成功，1-失败
+		msg： ""-成功，或其他各项说明
+		data: {
+				"userCell":13810293640,
+				"userType":1/2/3/4,
+				"userData":[]
+				}
+
+POST /submitdata
+
+	传入数据：{
+				"cellphone":13810293640,
+				"predict_rest":-1(未填写)，0-100正常值
+				"predict_park":-1(未填写)，0-100正常值
+				"rest_risk":0(未填写)，1-7正常值
+				"park_risk":0(未填写)，1-7正常值
+				"willing":0(未填写)，1(是)，2(否)
+				}
+	
+	传回数据：{"code":0,"msg":""}
+		code: 0-成功，1-失败
+		msg： ""-成功，或其他各项说明
