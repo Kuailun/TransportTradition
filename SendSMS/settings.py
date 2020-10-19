@@ -5,8 +5,8 @@
 # @Description:
 
 # 访问密码ID
-ACCESSKEYID = 'LTAI4FjJEVNZbkvcAd4r2C5S'
+ACCESSKEYID = 
 
 # 访问密码内容
-ACCESSKEYSECRET = 'DXPeWk6PUxyo1iqlHuXyNeufjNVLGm'
+ACCESSKEYSECRET = 
 
